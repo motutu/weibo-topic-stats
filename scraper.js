@@ -2,14 +2,25 @@
 
 // TODO: Handle timeouts and promise rejections.
 
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const sqlite3 = require('sqlite3');
+
+const config = require('./config');
+
 const db = new sqlite3.Database(path.join(__dirname, 'data.db'));
+
+const COOKIE_JAR = path.join(os.homedir(), `.config/weibo/cookies/${config.userid}.json`);
 
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+
+  let cookies = JSON.parse(fs.readFileSync(COOKIE_JAR, { encoding: 'utf-8' }));
+  await page.setCookie(...cookies);
+
   await page.goto('https://weibo.com/p/100808394e5749fd0cc7e969e37502ac1f1812/super_index');
 
   await page.waitForSelector('meta[name=description]');
